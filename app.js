@@ -10,7 +10,7 @@ const videoEl = document.getElementById("player");
 const backdrop = document.getElementById("modalBackdrop");
 
 
- const API_BASE = "https://hero-motivated-paying-halifax.trycloudflare.com";
+ const API_BASE = "https://silicon-loud-travels-photographic.trycloudflare.com";
 
 
 // === Helpers ===
@@ -33,9 +33,13 @@ function setServerURLLabel() {
 // === API ===
 async function fetchVideos() {
   const res = await fetch(`${API_BASE}/videos`, { credentials: "include" });
+  if (res.status === 401 || res.redirected) {
+    // Not logged in → redirect to backend login
+    window.location.href = `${API_BASE}/login`;
+    return [];
+  }
   if (!res.ok) throw new Error("Failed to fetch videos");
   const data = await res.json();
-  // backend returns array of filenames (["sample.mp4", "movie.mp4"])
   return data.map((name) => ({ id: encodeURIComponent(name), name }));
 }
 
