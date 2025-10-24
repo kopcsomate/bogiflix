@@ -1,3 +1,5 @@
+// ===== app.js =====
+
 // === Elements ===
 const grid = document.getElementById("grid");
 const search = document.getElementById("search");
@@ -9,9 +11,8 @@ const playerTitle = document.getElementById("playerTitle");
 const videoEl = document.getElementById("player");
 const backdrop = document.getElementById("modalBackdrop");
 
-
- const API_BASE = "https://mon-across-dietary-msie.trycloudflare.com  ";
-
+// ✅ Change this each time you restart Cloudflare tunnel
+const API_BASE = "https://setup-portable-shut-thank.trycloudflare.com";
 
 // === Helpers ===
 const prettyName = (name) =>
@@ -34,7 +35,7 @@ function setServerURLLabel() {
 async function fetchVideos() {
   const res = await fetch(`${API_BASE}/videos`, { credentials: "include" });
 
-  // 👇 If not logged in, open the backend login page
+  // If not logged in → go to backend login page
   if (res.status === 401) {
     window.location.href = `${API_BASE}/login`;
     return [];
@@ -46,8 +47,7 @@ async function fetchVideos() {
   return data.map((name) => ({ id: encodeURIComponent(name), name }));
 }
 
-
-// === UI builders ===
+// === UI Builders ===
 function createCard(v) {
   const div = document.createElement("article");
   div.className = "bf-card";
@@ -99,12 +99,7 @@ function closePlayer() {
 closeModalBtn.addEventListener("click", closePlayer);
 backdrop.addEventListener("click", closePlayer);
 document.addEventListener("keydown", (e) => {
-  // ESC closes modal if open
-  if (e.key === "Escape" && modal.classList.contains("open")) {
-    closePlayer();
-  }
-
-  // ESC clears search if modal not open
+  if (e.key === "Escape" && modal.classList.contains("open")) closePlayer();
   else if (e.key === "Escape" && !modal.classList.contains("open")) {
     if (search && search.value.trim().length > 0) {
       search.value = "";
@@ -127,13 +122,20 @@ function applyFilter(q) {
   renderGrid(filtered);
 }
 
-// Attach listener safely
 if (search) {
-  search.addEventListener("input", (e) => {
-    const query = e.target.value || "";
-    applyFilter(query);
-  });
+  search.addEventListener("input", (e) => applyFilter(e.target.value || ""));
 }
+
+// === Logout button handler ===
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutLink = document.querySelector(".logout-btn");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = `${API_BASE}/logout`;
+    });
+  }
+});
 
 // === Init ===
 (async function init() {
@@ -142,7 +144,6 @@ if (search) {
     allVideos = await fetchVideos();
     filtered = allVideos.slice();
     renderGrid(filtered);
-    //if (search) search.focus(); // focus automatically
   } catch (err) {
     console.error(err);
     grid.innerHTML = `<div style="color:#ff2d55;">Failed to load library.</div>`;
