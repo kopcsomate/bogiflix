@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bogiflix ❤️</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="bf-header">
+    <div class="bf-brand">
+      <!--<img class="bf-logo" src="logo.png" alt="Bogiflix ❤️ Logo" />-->
+      <span class="bf-title">Bogiflix</span>
+    </div>
+    <input id="search" class="bf-search" placeholder="Keresés…" />
+    <a href="/logout" class="logout-btn">Kijelentkezés</a>
+  </header>
+
+  <main class="bf-main">
+    <section id="grid" class="bf-grid" aria-live="polite"></section>
+  </main>
+
+  <!-- Modal player -->
+  <div id="playerModal" class="bf-modal" aria-hidden="true">
+    <div class="bf-modal-content">
+      <button id="closeModal" class="bf-close" aria-label="Close">✕</button>
+      <h2 id="playerTitle" class="bf-player-title"></h2>
+      <video id="player" class="bf-video" controls preload="metadata" playsinline></video>
+    </div>
+    <div id="modalBackdrop" class="bf-backdrop"></div>
+  </div>
+
+  <footer class="bf-footer">
+    <div><code id="serverUrl">(loading…)</code></div>
+    <!--<div class="tip">Pro tip: bookmark it on the TV for one-click movie nights.</div>-->
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
