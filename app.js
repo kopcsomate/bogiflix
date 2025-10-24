@@ -12,7 +12,7 @@ const videoEl = document.getElementById("player");
 const backdrop = document.getElementById("modalBackdrop");
 
 // ✅ Change this each time you restart Cloudflare tunnel
-const API_BASE = "https://setup-portable-shut-thank.trycloudflare.com";
+const API_BASE = "https://consists-warren-hardcover-earth.trycloudflare.com";
 
 // === Helpers ===
 const prettyName = (name) =>
@@ -149,3 +149,4 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.innerHTML = `<div style="color:#ff2d55;">Failed to load library.</div>`;
   }
 })();
+
