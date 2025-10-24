@@ -9,6 +9,10 @@ const playerTitle = document.getElementById("playerTitle");
 const videoEl = document.getElementById("player");
 const backdrop = document.getElementById("modalBackdrop");
 
+
+ const API_BASE = "https://hero-motivated-paying-halifax.trycloudflare.com";
+
+
 // === Helpers ===
 const prettyName = (name) =>
   name
@@ -28,7 +32,6 @@ function setServerURLLabel() {
 
 // === API ===
 async function fetchVideos() {
-  const API_BASE = "https://hero-motivated-paying-halifax.trycloudflare.com";
   const res = await fetch(`${API_BASE}/videos`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch videos");
   const data = await res.json();
@@ -137,4 +140,3 @@ if (search) {
     grid.innerHTML = `<div style="color:#ff2d55;">Failed to load library.</div>`;
   }
 })();
-
