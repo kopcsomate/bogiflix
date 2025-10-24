@@ -28,7 +28,7 @@ function setServerURLLabel() {
 
 // === API ===
 async function fetchVideos() {
-  const API_BASE = "https://mind-rate-country-entrance.trycloudflare.com";
+  const API_BASE = "https://hero-motivated-paying-halifax.trycloudflare.com";
   const res = await fetch(`${API_BASE}/videos`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch videos");
   const data = await res.json();
@@ -137,3 +137,4 @@ if (search) {
     grid.innerHTML = `<div style="color:#ff2d55;">Failed to load library.</div>`;
   }
 })();
+
