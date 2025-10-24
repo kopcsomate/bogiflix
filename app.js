@@ -28,7 +28,8 @@ function setServerURLLabel() {
 
 // === API ===
 async function fetchVideos() {
-  const res = await fetch("/videos", { credentials: "include" });
+  const API_BASE = "https://mind-rate-country-entrance.trycloudflare.com";
+  const res = await fetch(`${API_BASE}/videos`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch videos");
   const data = await res.json();
   // backend returns array of filenames (["sample.mp4", "movie.mp4"])
@@ -68,7 +69,7 @@ function renderGrid(list) {
 // === Player ===
 function openPlayer(v) {
   playerTitle.textContent = prettyName(v.name);
-  videoEl.src = `/stream/${v.name}`;
+  videoEl.src = `${API_BASE}/stream/${v.name}`;
   videoEl.currentTime = 0;
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
