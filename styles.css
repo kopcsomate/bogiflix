@@ -304,5 +304,16 @@ html, body {
 #closeEpisodeModal:hover {
   background: rgba(255,255,255,0.4);
 }
+/* --- Fix: Hide modals by default --- */
+.bf-modal,
+.bf-ep-modal {
+  display: none;
+}
+
+.bf-modal.open,
+.bf-ep-modal.open {
+  display: flex;
+}
+
 
 
