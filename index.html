@@ -1,40 +1,53 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="hu">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bogiflix ❤️</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BogiFlix</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="bf-header">
-    <div class="bf-brand">
-      <!--<img class="bf-logo" src="logo.png" alt="Bogiflix ❤️ Logo" />-->
-      <span class="bf-title">Bogiflix</span>
-    </div>
-    <input id="search" class="bf-search" placeholder="Keresés…" />
-    <a href="/logout" class="logout-btn">Kijelentkezés</a>
-  </header>
 
-  <main class="bf-main">
-    <section id="grid" class="bf-grid" aria-live="polite"></section>
-  </main>
+<header class="bf-header">
+  <a class="logout-btn" href="#">Kilépés</a>
+  <h1 class="bf-title">BogiFlix</h1>
 
-  <!-- Modal player -->
-  <div id="playerModal" class="bf-modal" aria-hidden="true">
-    <div class="bf-modal-content">
-      <button id="closeModal" class="bf-close" aria-label="Close">✕</button>
-      <h2 id="playerTitle" class="bf-player-title"></h2>
-      <video id="player" class="bf-video" controls preload="metadata" playsinline></video>
-    </div>
-    <div id="modalBackdrop" class="bf-backdrop"></div>
+  <nav class="bf-tabs">
+    <button class="bf-tab active" data-type="movies">Filmek</button>
+    <button class="bf-tab" data-type="series">Sorozatok</button>
+  </nav>
+
+  <input id="search" class="bf-search" placeholder="Keresés..." />
+</header>
+
+<main class="bf-main">
+  <section id="continue" class="bf-continue"></section>
+  <section id="grid" class="bf-grid"></section>
+</main>
+
+<footer class="bf-footer">
+  <div>Szerver: <code id="serverUrl"></code></div>
+  <div style="margin-top:8px;font-size:13px;opacity:.6;">© 2025 BogiFlix</div>
+</footer>
+
+<div id="playerModal" class="bf-modal" aria-hidden="true">
+  <div class="bf-modal-content">
+    <button id="closeModal" class="bf-close">✕</button>
+    <video id="player" class="bf-video" controls playsinline></video>
   </div>
+</div>
 
-  <footer class="bf-footer">
-    <div><code id="serverUrl">(loading…)</code></div>
-    <!--<div class="tip">Pro tip: bookmark it on the TV for one-click movie nights.</div>-->
-  </footer>
+<div id="episodeModal" class="bf-ep-modal" aria-hidden="true">
+  <div class="bf-ep-modal-content">
+    <button id="closeEpisodeModal" class="bf-close small">✕</button>
+    <h2 id="showTitle" class="bf-ep-title">Sorozat</h2>
+    <label>Évad:
+      <select id="seasonSelect"></select>
+    </label>
+    <ul id="episodeList" class="bf-ep-list"></ul>
+  </div>
+</div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
