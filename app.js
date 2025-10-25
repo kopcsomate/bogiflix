@@ -9,7 +9,7 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-// 🔧 Update when Cloudflare URL changes
+// 🔧 Cloudflare tunnel URL
 const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com";
 
 let mode = "movies";
@@ -100,25 +100,24 @@ function createCard(item, isContinue = false) {
     </div>
   `;
 
+  // Play button
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(item));
 
-  // Delete button for Continue Watching
+  // Delete progress button
   if (isContinue) {
     const delBtn = div.querySelector(".bf-del-progress-btn");
     delBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      await fetch(`${API_BASE}/progress`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ video: item.name }),
-      });
-      div.remove();
-
-      // hide header if no more cards remain
-      const row = div.closest(".bf-row");
-      if (row && row.children.length === 0) {
-        const section = row.closest(".bf-section");
-        if (section) section.remove();
+      try {
+        await fetch(`${API_BASE}/progress`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ video: item.name }),
+        });
+        await fetchProgress();
+        renderAll(); // refresh UI and ensure playback starts from start next time
+      } catch (err) {
+        console.error("Failed to delete progress:", err);
       }
     });
   }
@@ -138,7 +137,7 @@ function buildSection(title, items, isContinue = false) {
 function renderAll() {
   grid.innerHTML = "";
 
-  // Continue Watching (deduped)
+  // Continue Watching
   const cont = Object.entries(progressCache);
   if (cont.length) {
     const unique = {};
