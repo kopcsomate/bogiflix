@@ -10,9 +10,9 @@ const continueSection = document.getElementById("continueSection");
 // Overlay player
 const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
-const closeOverlay = document.getElementById("closeOverlay");
+const closeOverlay = document.getElementById("closeOverlay"); // our new visible “X” button
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update each time
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update this when tunnel changes
 
 let mode = "movies";
 let allVideos = [];
@@ -21,12 +21,11 @@ let filtered = [];
 // --- Helpers ---
 const prettyName = (name) =>
   name
-    .split("/")                 // take only the last part of a path
+    .split("/")
     .pop()
-    .replace(/\.[^.]+$/, "")    // remove extension
-    .replace(/[_\-]+/g, " ")    // replace underscores/dashes
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_\-]+/g, " ")
     .trim();
-
 
 function guessServerURL() {
   const { protocol, hostname, port } = window.location;
@@ -61,7 +60,7 @@ function createCard(v) {
     </div>
     <div class="bf-meta">
       <h3 class="bf-name">${prettyName(v.name)}</h3>
-      <button class="bf-btn" data-id="${v.id}" data-name="${v.name}">Lejátszás</button>
+      <button class="bf-btn" data-name="${v.name}">Lejátszás</button>
     </div>`;
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(v));
   return div;
@@ -78,14 +77,38 @@ function renderGrid(list, targetGrid) {
 
 // --- Player Overlay ---
 function openPlayer(v) {
-  const videoURL = `${API_BASE}/stream/${v.name}`;
+  const parts = v.name.split("/");
+  let videoURL = "";
+
+  if (v.name.startsWith("movies/")) {
+    // movies/Vígjáték/A_Grand_Budapest_Hotel.mp4
+    const category = parts[1];
+    const file = parts.slice(2).join("/");
+    videoURL = `${API_BASE}/stream/${encodeURIComponent(category)}/${encodeURIComponent(file)}`;
+  } else if (v.name.startsWith("series/")) {
+    // series/Breaking_Bad/Season 1/Episode_1.mp4
+    const show = parts[1];
+    const season = parts[2];
+    const file = parts.slice(3).join("/");
+    videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(season)}/${encodeURIComponent(file)}`;
+  } else {
+    videoURL = `${API_BASE}/stream/${encodeURIComponent(v.name)}`;
+  }
+
+  // Show overlay + load video
   playerVideo.src = videoURL;
   playerVideo.currentTime = 0;
   playerOverlay.classList.add("open");
-  playerOverlay.setAttribute("aria-hidden","false");
+  playerOverlay.setAttribute("aria-hidden", "false");
+
+  // Always show close “X” on desktop
+  closeOverlay.style.display = "block";
+
+  // Fullscreen for mobile
   const reqFS = playerVideo.requestFullscreen || playerVideo.webkitRequestFullscreen;
-  if (reqFS) reqFS.call(playerVideo);
-  playerVideo.play().catch(()=>{});
+  if (reqFS && window.innerWidth < 900) reqFS.call(playerVideo);
+
+  playerVideo.play().catch(() => {});
 }
 
 function closePlayer() {
@@ -93,50 +116,65 @@ function closePlayer() {
   playerVideo.removeAttribute("src");
   playerVideo.load();
   playerOverlay.classList.remove("open");
-  playerOverlay.setAttribute("aria-hidden","true");
-  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  playerOverlay.setAttribute("aria-hidden", "true");
+  closeOverlay.style.display = "none";
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 }
+
+// X button + ESC close support
 closeOverlay.addEventListener("click", closePlayer);
 playerVideo.addEventListener("ended", closePlayer);
-document.addEventListener("keydown", e=>{
-  if(e.key==="Escape" && playerOverlay.classList.contains("open")) closePlayer();
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
 });
 
 // --- Filter ---
 function applyFilter(q) {
   const needle = q.trim().toLowerCase();
-  filtered = !needle ? allVideos.slice() :
-    allVideos.filter(v=>prettyName(v.name).toLowerCase().includes(needle));
+  filtered = !needle
+    ? allVideos.slice()
+    : allVideos.filter(v => prettyName(v.name).toLowerCase().includes(needle));
   renderGrid(filtered, grid);
 }
-search.addEventListener("input", e=>applyFilter(e.target.value));
+search.addEventListener("input", e => applyFilter(e.target.value));
 
 // --- Mode switch ---
-moviesBtn.onclick = ()=>{mode="movies"; moviesBtn.classList.add("active"); seriesBtn.classList.remove("active"); loadAll();};
-seriesBtn.onclick = ()=>{mode="series"; seriesBtn.classList.add("active"); moviesBtn.classList.remove("active"); loadAll();};
+moviesBtn.onclick = () => {
+  mode = "movies";
+  moviesBtn.classList.add("active");
+  seriesBtn.classList.remove("active");
+  loadAll();
+};
+seriesBtn.onclick = () => {
+  mode = "series";
+  seriesBtn.classList.add("active");
+  moviesBtn.classList.remove("active");
+  loadAll();
+};
 
 // --- Logout ---
-document.querySelector(".logout-btn").addEventListener("click", e=>{
+document.querySelector(".logout-btn").addEventListener("click", e => {
   e.preventDefault();
-  window.location.href=`${API_BASE}/logout`;
+  window.location.href = `${API_BASE}/logout`;
 });
 
 // --- Init ---
-async function loadAll(){
-  try{
+async function loadAll() {
+  try {
     allVideos = await fetchVideos();
     filtered = allVideos.slice();
     renderGrid(filtered, grid);
 
     const progress = await fetchProgress();
-    const items = Object.values(progress||{});
-    if(items.length){
+    const items = Object.values(progress || {});
+    if (items.length) {
       continueSection.classList.remove("hidden");
       renderGrid(items, continueGrid);
     } else continueSection.classList.add("hidden");
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    grid.innerHTML=`<div style="color:#ff2d55;">Hiba a betöltés során.</div>`;
+    grid.innerHTML = `<div style="color:#ff2d55;">Hiba a betöltés során.</div>`;
   }
 }
+
 loadAll();
