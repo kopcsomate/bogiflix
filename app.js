@@ -10,9 +10,9 @@ const continueSection = document.getElementById("continueSection");
 // Overlay player
 const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
-const closeOverlay = document.getElementById("closeOverlay"); // our new visible “X” button
+const closeOverlay = document.getElementById("closeOverlay");
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update this when tunnel changes
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update this when your tunnel changes
 
 let mode = "movies";
 let allVideos = [];
@@ -69,10 +69,12 @@ function createCard(v) {
 function renderGrid(list, targetGrid) {
   targetGrid.innerHTML = "";
   if (!list.length) {
-    targetGrid.innerHTML = `<div style="opacity:.8">Nincs tartalom a(z) <b>${mode==="movies"?"Filmek":"Sorozatok"}</b> alatt.</div>`;
+    targetGrid.innerHTML = `<div style="opacity:.8">Nincs tartalom a(z) <b>${
+      mode === "movies" ? "Filmek" : "Sorozatok"
+    }</b> alatt.</div>`;
     return;
   }
-  list.forEach(v => targetGrid.appendChild(createCard(v)));
+  list.forEach((v) => targetGrid.appendChild(createCard(v)));
 }
 
 // --- Player Overlay ---
@@ -90,21 +92,23 @@ function openPlayer(v) {
     const show = parts[1];
     const season = parts[2];
     const file = parts.slice(3).join("/");
-    videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(season)}/${encodeURIComponent(file)}`;
+    videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(
+      season
+    )}/${encodeURIComponent(file)}`;
   } else {
     videoURL = `${API_BASE}/stream/${encodeURIComponent(v.name)}`;
   }
 
-  // Show overlay + load video
+  // Show overlay
   playerVideo.src = videoURL;
   playerVideo.currentTime = 0;
   playerOverlay.classList.add("open");
   playerOverlay.setAttribute("aria-hidden", "false");
 
-  // Always show close “X” on desktop
+  // Show the ✕ button explicitly on desktop
   closeOverlay.style.display = "block";
 
-  // Fullscreen for mobile
+  // Auto fullscreen on mobile only
   const reqFS = playerVideo.requestFullscreen || playerVideo.webkitRequestFullscreen;
   if (reqFS && window.innerWidth < 900) reqFS.call(playerVideo);
 
@@ -121,10 +125,10 @@ function closePlayer() {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 }
 
-// X button + ESC close support
+// X button + keyboard close support
 closeOverlay.addEventListener("click", closePlayer);
 playerVideo.addEventListener("ended", closePlayer);
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
 });
 
@@ -133,10 +137,10 @@ function applyFilter(q) {
   const needle = q.trim().toLowerCase();
   filtered = !needle
     ? allVideos.slice()
-    : allVideos.filter(v => prettyName(v.name).toLowerCase().includes(needle));
+    : allVideos.filter((v) => prettyName(v.name).toLowerCase().includes(needle));
   renderGrid(filtered, grid);
 }
-search.addEventListener("input", e => applyFilter(e.target.value));
+search.addEventListener("input", (e) => applyFilter(e.target.value));
 
 // --- Mode switch ---
 moviesBtn.onclick = () => {
@@ -153,7 +157,7 @@ seriesBtn.onclick = () => {
 };
 
 // --- Logout ---
-document.querySelector(".logout-btn").addEventListener("click", e => {
+document.querySelector(".logout-btn").addEventListener("click", (e) => {
   e.preventDefault();
   window.location.href = `${API_BASE}/logout`;
 });
