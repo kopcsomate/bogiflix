@@ -116,8 +116,13 @@
   <div class="login-container">
     <h1>BogiFlix</h1>
     <form action="/login" method="POST">
-      <input type="text" name="username" placeholder="Felhasználónév" required />
-      <input type="password" name="password" placeholder="Jelszó" required />
+      <input type="text" name="username" autocomplete="username" placeholder="Felhasználónév" required />
+      <input type="password" name="password" autocomplete="current-password" placeholder="Jelszó" required />
+  
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#ccc;margin-top:6px;">
+        <input type="checkbox" name="remember" value="1" style="width:16px;height:16px;"> Maradjak bejelentkezve
+      </label>
+
       <button type="submit">Bejelentkezés</button>
     </form>
     <div class="footer">© 2025 BogiFlix – Saját mozi otthon</div>
