@@ -7,19 +7,18 @@
   --accent2: #ff2d55;
 }
 
-/* --- Base --- */
-* {
-  box-sizing: border-box;
-}
+/* Base layout */
+* { box-sizing: border-box; }
 html, body {
   height: 100%;
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI";
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
   color: var(--text);
   background: radial-gradient(1200px 800px at 20% -10%, #1c1c22 0%, transparent 60%), var(--bg);
+  overflow-x: hidden;
 }
 
-/* --- Header --- */
+/* Header */
 .bf-header {
   position: sticky;
   top: 0;
@@ -27,63 +26,53 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 40px 0 50px;
   background: linear-gradient(180deg, rgba(11,11,15,0.9), rgba(11,11,15,0.4) 70%, transparent);
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* --- Title --- */
 .bf-title {
   font-family: 'Poppins', 'Orbitron', sans-serif;
-  font-size: 72px;
+  font-size: 64px;
   font-weight: 900;
   text-transform: uppercase;
   background: linear-gradient(270deg, #ff003c, #ff2d55, #c400ff, #ff2d55, #ff003c);
   background-size: 600%;
-  background-clip: text; /* ✅ Standard property added */
+  background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   color: transparent;
+  -webkit-text-fill-color: transparent;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px #ff003c, 0 0 20px #ff2d55, 0 0 40px #c400ff;
+  text-shadow: 0 0 8px rgba(255,0,60,0.5);
   animation: colorShift 10s linear infinite;
 }
-
 @keyframes colorShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* --- Tabs --- */
-.bf-tabs {
-  margin-top: 10px;
+.bf-selector {
   display: flex;
   gap: 10px;
+  margin-top: 15px;
 }
-.bf-tab {
-  background: rgba(255,255,255,0.1);
+.bf-toggle {
+  background: rgba(255,255,255,0.08);
   border: none;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   color: white;
-  font-weight: 600;
   cursor: pointer;
-  transition: background .25s ease, transform .25s ease;
+  font-weight: 600;
 }
-.bf-tab.active {
+.bf-toggle.active {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  background-clip: padding-box; /* ✅ standard property */
-  -webkit-background-clip: padding-box;
-}
-.bf-tab:hover {
-  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(229,9,20,.3);
 }
 
-/* --- Search --- */
 .bf-search {
-  width: min(420px, 80vw);
+  width: min(400px, 80vw);
   padding: 10px 14px;
   margin-top: 25px;
   border-radius: 14px;
@@ -92,112 +81,56 @@ html, body {
   color: var(--text);
   text-align: center;
   font-size: 15px;
-  transition: box-shadow .3s ease;
 }
-.bf-search:focus {
-  box-shadow: 0 0 12px rgba(255,0,60,0.5);
-}
+.bf-search:focus { box-shadow: 0 0 12px rgba(255,0,60,0.5); }
 
-/* --- Main layout --- */
-.bf-main {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* --- Grid --- */
+/* Grid */
+.bf-main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .bf-grid {
   display: grid;
   gap: 20px;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
-
-/* --- Cards --- */
 .bf-card {
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
   border: 1px solid rgba(255,255,255,.08);
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
-  transition: transform .15s ease, border-color .15s ease;
+  text-align: center;
+  transition: transform .15s ease;
 }
-.bf-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255,255,255,.18);
-}
+.bf-card:hover { transform: translateY(-4px); }
 .bf-thumb {
   height: 240px;
-  background: #1a1a22;
+  background: #1a1a24 center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #bfbfd1;
   font-weight: 700;
-  font-size: 14px;
 }
-.bf-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.bf-meta {
-  padding: 12px;
-}
+.bf-meta { padding: 10px; }
 .bf-name {
-  margin: 0 0 6px;
-  font-weight: 700;
   font-size: 15px;
+  font-weight: 700;
+  margin: 6px 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-}
-.bf-actions {
-  display: flex;
-  gap: 8px;
+  text-overflow: ellipsis;
 }
 .bf-btn {
+  appearance: none;
   border: none;
   cursor: pointer;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 700;
   color: white;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  background-clip: padding-box;
-  -webkit-background-clip: padding-box;
-  transition: opacity .15s ease;
 }
-.bf-btn:hover {
-  opacity: 0.9;
-}
+.bf-btn:hover { opacity: .9; }
 
-/* --- Continue Watching --- */
-.bf-continue {
-  margin-bottom: 32px;
-}
-.bf-continue h2 {
-  font-size: 22px;
-  margin-bottom: 12px;
-  color: var(--accent2);
-}
-.bf-continue-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.bf-remove {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  border-radius: 6px;
-  padding: 4px 6px;
-  font-size: 13px;
-  color: #fff;
-  cursor: pointer;
-}
-.bf-remove:hover {
-  background: rgba(255,0,60,0.6);
-}
-
-/* --- Footer --- */
+/* Footer */
 .bf-footer {
   padding: 24px;
   text-align: center;
@@ -206,114 +139,93 @@ html, body {
 }
 .bf-footer code {
   color: #ddd;
-  padding: 3px 6px;
   background: #1a1a22;
+  padding: 3px 6px;
   border-radius: 6px;
 }
 
-/* --- Logout button --- */
+/* Logout */
 .logout-btn {
   position: absolute;
   top: 20px;
   right: 30px;
   background: linear-gradient(90deg, #e50914, #ff2d55);
-  background-clip: padding-box; /* ✅ standard property */
-  -webkit-background-clip: padding-box;
   color: white;
   font-weight: 600;
   padding: 8px 14px;
   border-radius: 8px;
   text-decoration: none;
   font-size: 14px;
-  box-shadow: 0 0 10px rgba(255, 45, 85, 0.4);
-  transition: opacity .2s ease, transform .2s ease;
 }
-.logout-btn:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
-}
-/* --- Episode Picker Modal --- */
-#episodeModal {
+
+/* Overlay Player */
+.bf-player-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+}
+.bf-player-overlay.open { display: flex; }
+
+.bf-player-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.bf-player {
+  width: 100%;
+  height: 80vh;
+  background: #000;
+}
+.bf-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.25);
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+.bf-close-btn:hover { background: rgba(255,255,255,0.45); }
+
+/* Episode Modal */
+.bf-ep-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   padding: 20px;
   color: white;
+  z-index: 999;
 }
-
-#episodeModal.open {
-  display: flex;
-}
-
+.bf-ep-modal.open { display: flex; }
 #episodeList {
   max-height: 70vh;
   overflow-y: auto;
-  margin-top: 10px;
-  width: 100%;
+  width: 90%;
   max-width: 500px;
 }
-
 #episodeList li {
   list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   padding: 8px;
   margin-bottom: 6px;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.25s ease;
 }
+#episodeList li:hover { background: rgba(255,255,255,0.1); }
 
-#episodeList li:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-.bf-ep-thumb img {
-  width: 80px;
-  height: 45px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
-.bf-ep-info {
-  display: flex;
-  flex-direction: column;
-}
-
-#closeEpisodeModal {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  font-size: 18px;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-}
-
-#closeEpisodeModal:hover {
-  background: rgba(255,255,255,0.4);
-}
-/* --- Fix: Hide modals by default --- */
-.bf-modal,
-.bf-ep-modal {
-  display: none;
-}
-
-.bf-modal.open,
-.bf-ep-modal.open {
-  display: flex;
-}
-
-
-
+.hidden { display: none !important; }
