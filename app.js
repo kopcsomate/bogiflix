@@ -12,11 +12,11 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 change for your tunnel
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update for new tunnels
 
 let mode = "movies";
 let allVideos = [];
-let filtered = [];
+let progressCache = {};
 
 // --- Helpers ---
 const prettyName = (name) =>
@@ -35,7 +35,7 @@ serverUrl.textContent = guessServerURL();
 
 // --- Fetch ---
 async function fetchVideos() {
-  const res = await fetch(`${API_BASE}/videos/${mode}`, { credentials: "include" });
+  const res = await fetch(`${API_BASE}/videos?type=${mode}`, { credentials: "include" });
   if (res.status === 401) {
     window.location.href = `${API_BASE}/login`;
     return [];
@@ -47,7 +47,9 @@ async function fetchVideos() {
 async function fetchProgress() {
   const res = await fetch(`${API_BASE}/progress`, { credentials: "include" });
   if (!res.ok) return {};
-  return res.json();
+  const data = await res.json();
+  progressCache = data;
+  return data;
 }
 
 // --- Save progress ---
@@ -56,6 +58,7 @@ async function saveProgress() {
   const relPath = playerVideo.src.split("/stream/")[1];
   if (!relPath) return;
   const time = Math.floor(playerVideo.currentTime);
+
   try {
     await fetch(`${API_BASE}/progress`, {
       method: "POST",
@@ -63,12 +66,13 @@ async function saveProgress() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ video: relPath, time }),
     });
+    await updateContinueSection(); // refresh dynamically
   } catch (err) {
     console.warn("Progress save failed:", err);
   }
 }
 
-// --- Grid Rendering ---
+// --- Card creation ---
 function createCard(v) {
   const div = document.createElement("article");
   div.className = "bf-card";
@@ -78,21 +82,59 @@ function createCard(v) {
     </div>
     <div class="bf-meta">
       <h3 class="bf-name">${prettyName(v.name)}</h3>
-      <button class="bf-btn" data-name="${v.name}">Lejátszás</button>
-    </div>`;
+      <button class="bf-btn">Lejátszás</button>
+    </div>
+  `;
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(v));
   return div;
 }
 
-function renderGrid(list, targetGrid) {
-  targetGrid.innerHTML = "";
-  if (!list.length) {
-    targetGrid.innerHTML = `<div style="opacity:.8">Nincs tartalom a(z) <b>${
-      mode === "movies" ? "Filmek" : "Sorozatok"
-    }</b> alatt.</div>`;
-    return;
+// --- Section rendering ---
+function renderSection(title, items) {
+  const section = document.createElement("section");
+  section.className = "bf-section";
+  section.innerHTML = `
+    <h2 class="bf-section-title">${title}</h2>
+    <div class="bf-row"></div>
+  `;
+  const row = section.querySelector(".bf-row");
+  items.forEach((v) => row.appendChild(createCard(v)));
+  return section;
+}
+
+function renderAllSections(data) {
+  grid.innerHTML = "";
+
+  // Continue Watching first
+  const progressEntries = Object.entries(progressCache || {});
+  if (progressEntries.length) {
+    const continueItems = progressEntries.map(([name, info]) => ({
+      name,
+      thumb: info.thumb || `/videos/${name.replace(/\.mp4$/, ".jpg")}`,
+    }));
+    const section = renderSection("Megtekintés folytatása", continueItems);
+    grid.appendChild(section);
   }
-  list.forEach((v) => targetGrid.appendChild(createCard(v)));
+
+  // Normal movie categories
+  if (mode === "movies" && data.categories?.length) {
+    data.categories.forEach((cat) => {
+      const section = renderSection(cat.name, cat.items);
+      grid.appendChild(section);
+    });
+  }
+
+  // Series
+  if (mode === "series" && data.shows?.length) {
+    const section = renderSection("Sorozatok", data.shows);
+    grid.appendChild(section);
+  }
+
+  if (!grid.children.length) {
+    grid.innerHTML = `<div style="opacity:.8;text-align:center;margin-top:30px;">
+      Nincs tartalom a(z) <b>${mode === "movies" ? "Filmek" : "Sorozatok"}</b> alatt.
+    </div>`;
+  }
 }
 
 // --- Player Overlay ---
@@ -138,22 +180,12 @@ function closePlayer() {
 
 closeOverlay.addEventListener("click", closePlayer);
 playerVideo.addEventListener("ended", () => {
-  saveProgress(); // ✅ save when finished
+  saveProgress();
   closePlayer();
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
 });
-
-// --- Filter ---
-function applyFilter(q) {
-  const needle = q.trim().toLowerCase();
-  filtered = !needle
-    ? allVideos.slice()
-    : allVideos.filter((v) => prettyName(v.name).toLowerCase().includes(needle));
-  renderGrid(filtered, grid);
-}
-search.addEventListener("input", (e) => applyFilter(e.target.value));
 
 // --- Mode switch ---
 moviesBtn.onclick = () => {
@@ -175,22 +207,19 @@ document.querySelector(".logout-btn").addEventListener("click", (e) => {
   window.location.href = `${API_BASE}/logout`;
 });
 
+// --- Continue section refresh ---
+async function updateContinueSection() {
+  await fetchProgress();
+  // Re-render all to include latest progress section
+  const data = await fetchVideos();
+  renderAllSections(data);
+}
+
 // --- Init ---
 async function loadAll() {
   try {
-    allVideos = await fetchVideos();
-    filtered = allVideos.slice();
-    renderGrid(filtered, grid);
-
-    const progress = await fetchProgress();
-    const items = Object.entries(progress || {}).map(([name, info]) => ({
-      name,
-      thumb: info.thumb || "",
-    }));
-    if (items.length) {
-      continueSection.classList.remove("hidden");
-      renderGrid(items, continueGrid);
-    } else continueSection.classList.add("hidden");
+    const [data, _] = await Promise.all([fetchVideos(), fetchProgress()]);
+    renderAllSections(data);
   } catch (err) {
     console.error(err);
     grid.innerHTML = `<div style="color:#ff2d55;">Hiba a betöltés során.</div>`;
