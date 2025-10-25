@@ -12,7 +12,7 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update for new tunnels
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 change when tunnel changes
 
 let mode = "movies";
 let allVideos = [];
@@ -116,7 +116,7 @@ function renderAllSections(data) {
     grid.appendChild(section);
   }
 
-  // Normal movie categories
+  // Movie categories
   if (mode === "movies" && data.categories?.length) {
     data.categories.forEach((cat) => {
       const section = renderSection(cat.name, cat.items);
@@ -156,10 +156,22 @@ function openPlayer(v) {
   }
 
   playerVideo.src = videoURL;
-  playerVideo.currentTime = 0;
   playerOverlay.classList.add("open");
   playerOverlay.setAttribute("aria-hidden", "false");
   closeOverlay.style.display = "block";
+
+  // --- Auto-resume feature ---
+  const relPath = v.name;
+  const progress = progressCache?.[relPath];
+  if (progress && progress.time > 10) {
+    playerVideo.addEventListener(
+      "loadedmetadata",
+      () => {
+        if (playerVideo.duration > progress.time) playerVideo.currentTime = progress.time;
+      },
+      { once: true }
+    );
+  }
 
   const reqFS = playerVideo.requestFullscreen || playerVideo.webkitRequestFullscreen;
   if (reqFS && window.innerWidth < 900) reqFS.call(playerVideo);
@@ -210,7 +222,6 @@ document.querySelector(".logout-btn").addEventListener("click", (e) => {
 // --- Continue section refresh ---
 async function updateContinueSection() {
   await fetchProgress();
-  // Re-render all to include latest progress section
   const data = await fetchVideos();
   renderAllSections(data);
 }
