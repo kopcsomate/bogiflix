@@ -20,7 +20,13 @@ let filtered = [];
 
 // --- Helpers ---
 const prettyName = (name) =>
-  name.replace(/\.[^.]+$/, "").replace(/[_\-]+/g, " ").trim();
+  name
+    .split("/")                 // take only the last part of a path
+    .pop()
+    .replace(/\.[^.]+$/, "")    // remove extension
+    .replace(/[_\-]+/g, " ")    // replace underscores/dashes
+    .trim();
+
 
 function guessServerURL() {
   const { protocol, hostname, port } = window.location;
