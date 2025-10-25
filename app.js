@@ -9,14 +9,14 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-// 🔧 Cloudflare tunnel URL
+// 🔧 Update when Cloudflare URL changes
 const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com";
 
 let mode = "movies";
 let allItemsFlat = [];
 let progressCache = {};
 
-// === Helper functions ===
+// === Helpers ===
 const prettyName = (fullPath) =>
   fullPath
     .split("/")
@@ -39,6 +39,21 @@ function normalizeVideoPath(path) {
   }
 }
 
+function getCategoryFromName(path) {
+  return path.split("/")[1] || "Egyéb";
+}
+
+function guessThumbFromPath(videoPath) {
+  const norm = normalizeVideoPath(videoPath);
+  const parts = norm.split("/");
+  if (parts[0] === "movies" && parts.length >= 3) {
+    const cat = parts[1];
+    const file = parts.slice(2).join("/").replace(/\.mp4$/i, "");
+    return `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
+  }
+  return "";
+}
+
 // === Backend fetch ===
 async function fetchVideos() {
   const res = await fetch(`${API_BASE}/videos/${mode}`, { credentials: "include" });
@@ -58,8 +73,6 @@ async function fetchProgress() {
 }
 
 // === Grouping ===
-const getCategoryFromName = (path) => path.split("/")[1] || "Egyéb";
-
 function groupMovies(items) {
   const groups = {};
   items.forEach((it) => {
@@ -68,18 +81,6 @@ function groupMovies(items) {
     groups[cat].push(it);
   });
   return groups;
-}
-
-// === Thumbnails ===
-function guessThumbFromPath(videoPath) {
-  const norm = normalizeVideoPath(videoPath);
-  const parts = norm.split("/");
-  if (parts[0] === "movies" && parts.length >= 3) {
-    const cat = parts[1];
-    const file = parts.slice(2).join("/").replace(/\.mp4$/i, "");
-    return `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
-  }
-  return "";
 }
 
 // === Rendering ===
@@ -96,16 +97,18 @@ function createCard(item, isContinue = false) {
     <div class="bf-meta">
       <h3 class="bf-name">${title}</h3>
       <button class="bf-btn">Lejátszás</button>
-      ${isContinue ? '<button class="bf-del-progress-btn">Folytatás törlése</button>' : ""}
+      ${
+        isContinue
+          ? `<button class="bf-del-btn">Folytatás törlése</button>`
+          : ""
+      }
     </div>
   `;
 
-  // Play button
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(item));
 
-  // Delete progress button
   if (isContinue) {
-    const delBtn = div.querySelector(".bf-del-progress-btn");
+    const delBtn = div.querySelector(".bf-del-btn");
     delBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       try {
@@ -113,11 +116,12 @@ function createCard(item, isContinue = false) {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ video: item.name }),
+          credentials: "include",
         });
         await fetchProgress();
-        renderAll(); // refresh UI and ensure playback starts from start next time
+        renderAll();
       } catch (err) {
-        console.error("Failed to delete progress:", err);
+        console.error("Delete failed:", err);
       }
     });
   }
@@ -131,13 +135,47 @@ function buildSection(title, items, isContinue = false) {
   section.innerHTML = `<h2 class="bf-section-title">${title}</h2><div class="bf-row"></div>`;
   const row = section.querySelector(".bf-row");
   items.forEach((it) => row.appendChild(createCard(it, isContinue)));
+  addRowScrollControls(section);
   return section;
 }
 
+// === Row scroll controls ===
+function addRowScrollControls(section) {
+  const row = section.querySelector(".bf-row");
+  if (!row) return;
+
+  const left = document.createElement("button");
+  left.className = "bf-arrow left";
+  left.innerHTML = "&#10094;";
+  const right = document.createElement("button");
+  right.className = "bf-arrow right";
+  right.innerHTML = "&#10095;";
+
+  section.appendChild(left);
+  section.appendChild(right);
+
+  const scrollAmount = row.clientWidth * 0.9;
+
+  left.addEventListener("click", () => {
+    row.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+  });
+  right.addEventListener("click", () => {
+    row.scrollBy({ left: scrollAmount, behavior: "smooth" });
+  });
+
+  const updateArrows = () => {
+    const maxScroll = row.scrollWidth - row.clientWidth - 5;
+    left.style.opacity = row.scrollLeft <= 0 ? 0 : 1;
+    right.style.opacity = row.scrollLeft >= maxScroll ? 0 : 1;
+  };
+  row.addEventListener("scroll", updateArrows);
+  updateArrows();
+}
+
+// === Render all ===
 function renderAll() {
   grid.innerHTML = "";
 
-  // Continue Watching
   const cont = Object.entries(progressCache);
   if (cont.length) {
     const unique = {};
@@ -148,16 +186,18 @@ function renderAll() {
       name: k,
       thumb: guessThumbFromPath(k),
     }));
-    grid.appendChild(buildSection("Megtekintés Folytatása", continueItems, true));
+    const section = buildSection("Megtekintés folytatása", continueItems, true);
+    grid.appendChild(section);
   }
 
-  // Movies grouped by category
   if (mode === "movies") {
     const groups = groupMovies(allItemsFlat);
-    Object.keys(groups).forEach((cat) => grid.appendChild(buildSection(cat, groups[cat])));
+    Object.keys(groups).forEach((cat) => {
+      const section = buildSection(cat, groups[cat]);
+      grid.appendChild(section);
+    });
   }
 
-  // Empty fallback
   if (!grid.children.length) {
     grid.innerHTML = `<div style="text-align:center;opacity:.7;">Nincs tartalom.</div>`;
   }
@@ -231,9 +271,7 @@ document.addEventListener("keydown", (e) => {
 search?.addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   if (!q) return renderAll();
-  const matches = allItemsFlat.filter((i) =>
-    prettyName(i.name).toLowerCase().includes(q)
-  );
+  const matches = allItemsFlat.filter((i) => prettyName(i.name).toLowerCase().includes(q));
   grid.innerHTML = "";
   grid.appendChild(buildSection("Keresés eredményei", matches));
 });
