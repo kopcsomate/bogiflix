@@ -8,11 +8,8 @@
 }
 
 /* Base layout */
-* {
-  box-sizing: border-box;
-}
-html,
-body {
+* { box-sizing: border-box; }
+html, body {
   height: 100%;
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
@@ -23,17 +20,9 @@ body {
 
 /* Header */
 .bf-header {
-  position: relative; /* not sticky */
-  top: 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 0 50px;
-  background: linear-gradient(180deg, rgba(11,11,15,0.9), rgba(11,11,15,0.4) 70%, transparent);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+  padding: 40px 0 30px;
 }
-
 .bf-title {
   font-family: 'Poppins', 'Orbitron', sans-serif;
   font-size: 64px;
@@ -49,27 +38,20 @@ body {
   text-shadow: 0 0 8px rgba(255,0,60,0.5);
   animation: colorShift 10s linear infinite;
 }
-
 @keyframes colorShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .bf-selector {
   display: flex;
   gap: 10px;
+  justify-content: center;
   margin-top: 15px;
 }
-
 .bf-toggle {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.08);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -77,10 +59,9 @@ body {
   cursor: pointer;
   font-weight: 600;
 }
-
 .bf-toggle.active {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+  box-shadow: 0 0 10px rgba(229,9,20,.3);
 }
 
 .bf-search {
@@ -88,88 +69,84 @@ body {
   padding: 10px 14px;
   margin-top: 25px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
   color: var(--text);
   text-align: center;
   font-size: 15px;
 }
+.bf-search:focus { box-shadow: 0 0 12px rgba(255,0,60,0.5); }
 
-.bf-search:focus {
-  box-shadow: 0 0 12px rgba(255, 0, 60, 0.5);
-}
+/* Layout */
+.bf-main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 
-/* Main layout */
-.bf-main {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* --- Netflix-Style Sections --- */
+/* Section layout */
 .bf-section {
-  margin-bottom: 50px;
+  margin-bottom: 40px;
+  position: relative;
 }
-
 .bf-section-title {
   font-size: 22px;
   font-weight: 700;
-  margin: 20px 0 15px 5px;
-  color: var(--text);
-  text-transform: capitalize;
+  margin: 0 0 14px 6px;
 }
 
-/* Horizontal scrolling rows */
+/* Netflix-style horizontal row */
 .bf-row {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   overflow-x: auto;
-  padding: 10px 0 20px;
-  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 10px 0;
 }
+.bf-row::-webkit-scrollbar { display: none; }
 
-.bf-row::-webkit-scrollbar {
-  height: 6px;
+/* Arrow buttons */
+.bf-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  font-size: 26px;
+  width: 46px;
+  height: 80px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .2s ease;
 }
-.bf-row::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-}
-.bf-row::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+.bf-arrow:hover { background: rgba(255,255,255,0.2); }
+.bf-arrow.left { left: -10px; }
+.bf-arrow.right { right: -10px; }
 
-/* Cards */
+/* Card styling */
 .bf-card {
-  flex: 0 0 220px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex: 0 0 180px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
   overflow: hidden;
-  scroll-snap-align: start;
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: transform .2s ease;
 }
-.bf-card:hover {
-  transform: translateY(-5px);
-}
+.bf-card:hover { transform: scale(1.05); }
 
 .bf-thumb {
-  width: 100%;
-  height: 140px;
-  background: #1a1a22 center/cover no-repeat;
+  height: 240px;
+  background: #1a1a24 center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #bfbfd1;
   font-weight: 700;
-  font-size: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-
-.bf-meta {
-  padding: 10px;
-}
+.bf-meta { padding: 10px; }
 .bf-name {
   font-size: 15px;
   font-weight: 700;
@@ -178,7 +155,7 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.bf-btn {
+.bf-btn, .bf-del-btn {
   appearance: none;
   border: none;
   cursor: pointer;
@@ -186,57 +163,18 @@ body {
   border-radius: 10px;
   font-weight: 700;
   color: white;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.bf-btn {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
 }
-.bf-btn:hover {
-  opacity: 0.9;
-}
-/* "Folytatás törlése" button */
-.bf-del-progress-btn {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-weight: 600;
-  color: white;
-  background: rgba(255, 255, 255, 0.12);
-  margin-top: 6px;
-  width: 100%;
-  transition: background 0.2s ease;
-}
-.bf-del-progress-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
+.bf-btn:hover { opacity: .9; }
 
-
-/* Footer */
-.bf-footer {
-  padding: 24px;
-  text-align: center;
-  color: var(--muted);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+.bf-del-btn {
+  background: rgba(255,255,255,0.1);
 }
-.bf-footer code {
-  color: #ddd;
-  background: #1a1a22;
-  padding: 3px 6px;
-  border-radius: 6px;
-}
-
-/* Logout Button */
-.logout-btn {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  background: linear-gradient(90deg, #e50914, #ff2d55);
-  color: white;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 14px;
-}
+.bf-del-btn:hover { background: rgba(255,255,255,0.25); }
 
 /* Player Overlay */
 .bf-player-overlay {
@@ -248,9 +186,7 @@ body {
   background: rgba(0, 0, 0, 0.95);
   z-index: 9999;
 }
-.bf-player-overlay.open {
-  display: flex;
-}
+.bf-player-overlay.open { display: flex; }
 
 .bf-player-wrapper {
   position: relative;
@@ -265,34 +201,17 @@ body {
   height: 80vh;
   background: #000;
 }
-
-/* Close Button Fix */
-#closeOverlay {
-  z-index: 10000;
+.bf-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  font-size: 24px;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.25);
   border: none;
+  color: #fff;
+  font-size: 20px;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
 }
-#closeOverlay:hover {
-  background: rgba(255, 255, 255, 0.45);
-}
-
-/* Hide old episode modal (if still in DOM) */
-#episodeModal,
-.bf-ep-modal {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-.hidden {
-  display: none !important;
-}
+.bf-close-btn:hover { background: rgba(255,255,255,0.45); }
