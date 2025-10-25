@@ -219,3 +219,20 @@ html, body {
 }
 
 .hidden { display: none !important; }
+
+/* Hide any legacy episode modal UI so it never flashes at bottom */
+#episodeModal,
+.bf-ep-modal {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Safety: overlay shouldn't render unless .open is present */
+.bf-player-overlay {
+  display: none;
+}
+.bf-player-overlay.open {
+  display: flex;
+}
+
