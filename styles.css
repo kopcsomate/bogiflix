@@ -7,20 +7,19 @@
   --accent2: #ff2d55;
 }
 
-/* --- Base layout --- */
+/* --- Base --- */
 * {
   box-sizing: border-box;
 }
 html, body {
   height: 100%;
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI";
   color: var(--text);
   background: radial-gradient(1200px 800px at 20% -10%, #1c1c22 0%, transparent 60%), var(--bg);
-  overflow-x: hidden;
 }
 
-/* --- HEADER --- */
+/* --- Header --- */
 .bf-header {
   position: sticky;
   top: 0;
@@ -34,72 +33,55 @@ html, body {
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Optional logo image */
-.bf-logo {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 0 8px rgba(255,0,0,0.4));
-}
-
-/* 🎬 Big neon “BogiFlix” title */
+/* --- Title --- */
 .bf-title {
-  font-family: 'Poppins', 'Orbitron', 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Orbitron', sans-serif;
   font-size: 72px;
   font-weight: 900;
   text-transform: uppercase;
   background: linear-gradient(270deg, #ff003c, #ff2d55, #c400ff, #ff2d55, #ff003c);
   background-size: 600%;
-  background-clip: text;
+  background-clip: text; /* ✅ Standard property added */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
   letter-spacing: 2px;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-
-  text-shadow:
-    0 0 5px #ff003c,
-    0 0 10px #ff2d55,
-    0 0 20px #c400ff,
-    0 0 40px rgba(255, 0, 60, 0.5),
-    0 0 60px rgba(255, 0, 60, 0.4),
-    0 0 80px rgba(255, 0, 60, 0.3);
-
-  animation: neonPulse 2.5s ease-in-out infinite alternate,
-             colorShift 10s linear infinite;
+  text-shadow: 0 0 10px #ff003c, 0 0 20px #ff2d55, 0 0 40px #c400ff;
+  animation: colorShift 10s linear infinite;
 }
 
-/* subtle breathing animation */
-@keyframes neonPulse {
-  0% {
-    text-shadow:
-      0 0 5px #ff003c,
-      0 0 10px #ff2d55,
-      0 0 20px #c400ff,
-      0 0 40px rgba(255, 0, 60, 0.5);
-    transform: scale(1);
-  }
-  100% {
-    text-shadow:
-      0 0 10px #ff003c,
-      0 0 20px #ff2d55,
-      0 0 40px #c400ff,
-      0 0 80px rgba(255, 0, 60, 0.7);
-    transform: scale(1.04);
-  }
-}
-
-/* gradient color shift animation */
 @keyframes colorShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* centered search bar */
+/* --- Tabs --- */
+.bf-tabs {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.bf-tab {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .25s ease, transform .25s ease;
+}
+.bf-tab.active {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background-clip: padding-box; /* ✅ standard property */
+  -webkit-background-clip: padding-box;
+}
+.bf-tab:hover {
+  transform: translateY(-2px);
+}
+
+/* --- Search --- */
 .bf-search {
   width: min(420px, 80vw);
   padding: 10px 14px;
@@ -108,57 +90,58 @@ html, body {
   border: 1px solid rgba(255,255,255,.08);
   background: rgba(255,255,255,.05);
   color: var(--text);
-  outline: none;
   text-align: center;
   font-size: 15px;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow .3s ease;
 }
 .bf-search:focus {
   box-shadow: 0 0 12px rgba(255,0,60,0.5);
 }
-.bf-search::placeholder {
-  color: var(--muted);
-  text-align: center;
-}
 
-/* --- MAIN CONTENT --- */
+/* --- Main layout --- */
 .bf-main {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* --- Grid --- */
 .bf-grid {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
+/* --- Cards --- */
 .bf-card {
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: transform .15s ease, border-color .15s ease;
 }
 .bf-card:hover {
   transform: translateY(-4px);
   border-color: rgba(255,255,255,.18);
-  box-shadow: 0 16px 40px rgba(0,0,0,.35);
 }
 .bf-thumb {
   height: 240px;
-  background: linear-gradient(135deg, #272732, #1a1a24);
+  background: #1a1a22;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #bfbfd1;
   font-weight: 700;
   font-size: 14px;
-  letter-spacing: .3px;
 }
-.bf-meta { padding: 12px; }
+.bf-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bf-meta {
+  padding: 12px;
+}
 .bf-name {
   margin: 0 0 6px;
   font-weight: 700;
@@ -172,7 +155,6 @@ html, body {
   gap: 8px;
 }
 .bf-btn {
-  appearance: none;
   border: none;
   cursor: pointer;
   padding: 8px 12px;
@@ -180,14 +162,42 @@ html, body {
   font-weight: 700;
   color: white;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  box-shadow: 0 6px 16px rgba(229,9,20,.35);
+  background-clip: padding-box;
+  -webkit-background-clip: padding-box;
   transition: opacity .15s ease;
 }
 .bf-btn:hover {
-  opacity: .9;
+  opacity: 0.9;
 }
 
-/* --- FOOTER --- */
+/* --- Continue Watching --- */
+.bf-continue {
+  margin-bottom: 32px;
+}
+.bf-continue h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+  color: var(--accent2);
+}
+.bf-continue-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.bf-remove {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+}
+.bf-remove:hover {
+  background: rgba(255,0,60,0.6);
+}
+
+/* --- Footer --- */
 .bf-footer {
   padding: 24px;
   text-align: center;
@@ -201,68 +211,14 @@ html, body {
   border-radius: 6px;
 }
 
-/* --- MODAL PLAYER --- */
-.bf-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 999;
-}
-.bf-modal.open {
-  display: flex;
-}
-.bf-modal-content {
-  position: relative;
-  width: 90vw;
-  max-width: 1200px;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0,0,0,.6);
-}
-.bf-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: #fff;
-  font-size: 18px;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  z-index: 2;
-}
-.bf-close:hover {
-  background: rgba(255,255,255,0.4);
-}
-.bf-video {
-  width: 100%;
-  height: 85vh;
-  background: #000;
-  border: none;
-  outline: none;
-  display: block;
-}
-
-@media (max-width: 600px) {
-  .bf-title {
-    font-size: 48px;
-  }
-  .bf-video {
-    height: 70vh;
-  }
-}
-
+/* --- Logout button --- */
 .logout-btn {
   position: absolute;
   top: 20px;
   right: 30px;
   background: linear-gradient(90deg, #e50914, #ff2d55);
+  background-clip: padding-box; /* ✅ standard property */
+  -webkit-background-clip: padding-box;
   color: white;
   font-weight: 600;
   padding: 8px 14px;
