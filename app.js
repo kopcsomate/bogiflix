@@ -12,7 +12,7 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update this when your tunnel changes
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 change for your tunnel
 
 let mode = "movies";
 let allVideos = [];
@@ -50,6 +50,24 @@ async function fetchProgress() {
   return res.json();
 }
 
+// --- Save progress ---
+async function saveProgress() {
+  if (!playerVideo.src) return;
+  const relPath = playerVideo.src.split("/stream/")[1];
+  if (!relPath) return;
+  const time = Math.floor(playerVideo.currentTime);
+  try {
+    await fetch(`${API_BASE}/progress`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ video: relPath, time }),
+    });
+  } catch (err) {
+    console.warn("Progress save failed:", err);
+  }
+}
+
 // --- Grid Rendering ---
 function createCard(v) {
   const div = document.createElement("article");
@@ -83,32 +101,24 @@ function openPlayer(v) {
   let videoURL = "";
 
   if (v.name.startsWith("movies/")) {
-    // movies/Vígjáték/A_Grand_Budapest_Hotel.mp4
     const category = parts[1];
     const file = parts.slice(2).join("/");
     videoURL = `${API_BASE}/stream/${encodeURIComponent(category)}/${encodeURIComponent(file)}`;
   } else if (v.name.startsWith("series/")) {
-    // series/Breaking_Bad/Season 1/Episode_1.mp4
     const show = parts[1];
     const season = parts[2];
     const file = parts.slice(3).join("/");
     videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(
       season
     )}/${encodeURIComponent(file)}`;
-  } else {
-    videoURL = `${API_BASE}/stream/${encodeURIComponent(v.name)}`;
   }
 
-  // Show overlay
   playerVideo.src = videoURL;
   playerVideo.currentTime = 0;
   playerOverlay.classList.add("open");
   playerOverlay.setAttribute("aria-hidden", "false");
-
-  // Show the ✕ button explicitly on desktop
   closeOverlay.style.display = "block";
 
-  // Auto fullscreen on mobile only
   const reqFS = playerVideo.requestFullscreen || playerVideo.webkitRequestFullscreen;
   if (reqFS && window.innerWidth < 900) reqFS.call(playerVideo);
 
@@ -116,6 +126,7 @@ function openPlayer(v) {
 }
 
 function closePlayer() {
+  saveProgress(); // ✅ save when closing
   playerVideo.pause();
   playerVideo.removeAttribute("src");
   playerVideo.load();
@@ -125,9 +136,11 @@ function closePlayer() {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 }
 
-// X button + keyboard close support
 closeOverlay.addEventListener("click", closePlayer);
-playerVideo.addEventListener("ended", closePlayer);
+playerVideo.addEventListener("ended", () => {
+  saveProgress(); // ✅ save when finished
+  closePlayer();
+});
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
 });
@@ -170,7 +183,10 @@ async function loadAll() {
     renderGrid(filtered, grid);
 
     const progress = await fetchProgress();
-    const items = Object.values(progress || {});
+    const items = Object.entries(progress || {}).map(([name, info]) => ({
+      name,
+      thumb: info.thumb || "",
+    }));
     if (items.length) {
       continueSection.classList.remove("hidden");
       renderGrid(items, continueGrid);
