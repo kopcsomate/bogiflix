@@ -4,19 +4,17 @@ const search = document.getElementById("search");
 const serverUrl = document.getElementById("serverUrl");
 const moviesBtn = document.getElementById("moviesBtn");
 const seriesBtn = document.getElementById("seriesBtn");
-const continueGrid = document.getElementById("continueGrid");
-const continueSection = document.getElementById("continueSection");
 
 // Overlay player
 const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 change when tunnel changes
+const API_BASE = "https://tel-ghz-successful-software.trycloudflare.com"; // 🔧 update when tunnel changes
 
-let mode = "movies";
-let allVideos = [];
-let progressCache = {};
+let mode = "movies";          // "movies" | "series"
+let allItemsFlat = [];        // raw items from /videos/:type
+let progressCache = {};       // from /progress
 
 // --- Helpers ---
 const prettyName = (name) =>
@@ -33,30 +31,60 @@ function guessServerURL() {
 }
 serverUrl.textContent = guessServerURL();
 
-// --- Fetch ---
+// Get category (movies/<category>/file.mp4)
+function getCategoryFromName(name) {
+  const parts = name.split("/");
+  if (parts[0] === "movies" && parts.length >= 3) {
+    return parts[1]; // e.g. "Vígjáték"
+  }
+  return null;
+}
+
+// Group flat movie array into { categoryName: [items...] }
+function groupMoviesByCategory(items) {
+  const groups = {};
+  items.forEach((item) => {
+    const cat = getCategoryFromName(item.name) || "Egyéb";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
+  });
+  return groups; // { "Vígjáték": [ ... ], "Akció": [ ... ] }
+}
+
+// Series: if backend returns flat list like ["series/Breaking_Bad", ...],
+// we just put them all under "Sorozatok".
+function makeSeriesGroup(items) {
+  return { Sorozatok: items };
+}
+
+// --- API calls ---
 async function fetchVideos() {
-  const res = await fetch(`${API_BASE}/videos?type=${mode}`, { credentials: "include" });
+  // this matches your current backend route definition
+  const res = await fetch(`${API_BASE}/videos/${mode}`, { credentials: "include" });
   if (res.status === 401) {
     window.location.href = `${API_BASE}/login`;
     return [];
   }
-  if (!res.ok) throw new Error("Fetch failed");
-  return res.json();
+  if (!res.ok) throw new Error("Fetch videos failed");
+  return res.json(); // returns flat array
 }
 
 async function fetchProgress() {
   const res = await fetch(`${API_BASE}/progress`, { credentials: "include" });
   if (!res.ok) return {};
   const data = await res.json();
-  progressCache = data;
-  return data;
+  progressCache = data || {};
+  return progressCache;
 }
 
-// --- Save progress ---
+// save watch position in backend
 async function saveProgress() {
   if (!playerVideo.src) return;
+  // playerVideo.src looks like .../stream/<category>/<file> (movies)
+  // or .../stream/<show>/<season>/<file> (series)
   const relPath = playerVideo.src.split("/stream/")[1];
   if (!relPath) return;
+
   const time = Math.floor(playerVideo.currentTime);
 
   try {
@@ -66,13 +94,14 @@ async function saveProgress() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ video: relPath, time }),
     });
-    await updateContinueSection(); // refresh dynamically
+    // refresh continue watching row in UI
+    await updateContinueAndRerender();
   } catch (err) {
     console.warn("Progress save failed:", err);
   }
 }
 
-// --- Card creation ---
+// --- Card / Section builders ---
 function createCard(v) {
   const div = document.createElement("article");
   div.className = "bf-card";
@@ -89,128 +118,192 @@ function createCard(v) {
   return div;
 }
 
-// --- Section rendering ---
-function renderSection(title, items) {
+function buildSectionDOM(sectionTitle, items) {
   const section = document.createElement("section");
   section.className = "bf-section";
   section.innerHTML = `
-    <h2 class="bf-section-title">${title}</h2>
+    <h2 class="bf-section-title">${sectionTitle}</h2>
     <div class="bf-row"></div>
   `;
   const row = section.querySelector(".bf-row");
-  items.forEach((v) => row.appendChild(createCard(v)));
+  items.forEach((item) => row.appendChild(createCard(item)));
   return section;
 }
 
-function renderAllSections(data) {
-  grid.innerHTML = "";
+// Render all content rows into #grid
+function renderAllSections() {
+  const container = grid;
+  container.innerHTML = "";
 
-  // Continue Watching first
+  // 1) "Continue watching" row
   const progressEntries = Object.entries(progressCache || {});
   if (progressEntries.length) {
-    const continueItems = progressEntries.map(([name, info]) => ({
-      name,
-      thumb: info.thumb || `/videos/${name.replace(/\.mp4$/, ".jpg")}`,
-    }));
-    const section = renderSection("Megtekintés folytatása", continueItems);
-    grid.appendChild(section);
+    // Convert from progressCache { "movies/Cat/File.mp4": {time, thumb} } → cards
+    const continueItems = progressEntries.map(([videoPath, info]) => {
+      return {
+        name: videoPath,
+        thumb: info.thumb || guessThumbFromPath(videoPath),
+      };
+    });
+    const contSec = buildSectionDOM("Megtekintés folytatása", continueItems);
+    container.appendChild(contSec);
   }
 
-  // Movie categories
-  if (mode === "movies" && data.categories?.length) {
-    data.categories.forEach((cat) => {
-      const section = renderSection(cat.name, cat.items);
-      grid.appendChild(section);
+  // 2) Content rows
+  if (mode === "movies") {
+    // group by category
+    const grouped = groupMoviesByCategory(allItemsFlat); // { "Vígjáték": [...], "Akció": [...] }
+    Object.keys(grouped).forEach((catName) => {
+      const sec = buildSectionDOM(catName, grouped[catName]);
+      container.appendChild(sec);
+    });
+  } else {
+    // mode === "series"
+    const grouped = makeSeriesGroup(allItemsFlat); // { "Sorozatok": [...] }
+    Object.keys(grouped).forEach((title) => {
+      const sec = buildSectionDOM(title, grouped[title]);
+      container.appendChild(sec);
     });
   }
 
-  // Series
-  if (mode === "series" && data.shows?.length) {
-    const section = renderSection("Sorozatok", data.shows);
-    grid.appendChild(section);
-  }
-
-  if (!grid.children.length) {
-    grid.innerHTML = `<div style="opacity:.8;text-align:center;margin-top:30px;">
-      Nincs tartalom a(z) <b>${mode === "movies" ? "Filmek" : "Sorozatok"}</b> alatt.
-    </div>`;
+  // 3) If nothing rendered
+  if (!container.children.length) {
+    container.innerHTML = `
+      <div style="opacity:.8;text-align:center;margin-top:30px;">
+        Nincs tartalom a(z) <b>${mode === "movies" ? "Filmek" : "Sorozatok"}</b> alatt.
+      </div>`;
   }
 }
 
-// --- Player Overlay ---
+// helper: guess thumbnail path for continue watching items
+function guessThumbFromPath(videoPath) {
+  // videoPath like "movies/Vígjáték/A_Grand_Budapest_Hotel.mp4"
+  // we try /videos/movies/Vígjáték/A_Grand_Budapest_Hotel.jpg
+  if (videoPath.startsWith("movies/")) {
+    const parts = videoPath.split("/");
+    const cat = parts[1];
+    const fileMP4 = parts.slice(2).join("/");
+    const base = fileMP4.replace(/\.mp4$/i, "");
+    return `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(base)}.jpg`;
+  }
+  // for series you could add cover or per-episode thumb logic later
+  return "";
+}
+
+// --- Player Overlay + auto-resume ---
 function openPlayer(v) {
+  // Build correct stream URL from v.name
   const parts = v.name.split("/");
   let videoURL = "";
 
   if (v.name.startsWith("movies/")) {
+    // movies/<cat>/<file>
     const category = parts[1];
     const file = parts.slice(2).join("/");
     videoURL = `${API_BASE}/stream/${encodeURIComponent(category)}/${encodeURIComponent(file)}`;
   } else if (v.name.startsWith("series/")) {
+    // series/<show>/<season>/<file>
     const show = parts[1];
     const season = parts[2];
     const file = parts.slice(3).join("/");
-    videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(
-      season
-    )}/${encodeURIComponent(file)}`;
+    videoURL = `${API_BASE}/stream/${encodeURIComponent(show)}/${encodeURIComponent(season)}/${encodeURIComponent(file)}`;
   }
 
   playerVideo.src = videoURL;
-  playerOverlay.classList.add("open");
-  playerOverlay.setAttribute("aria-hidden", "false");
-  closeOverlay.style.display = "block";
 
-  // --- Auto-resume feature ---
-  const relPath = v.name;
-  const progress = progressCache?.[relPath];
-  if (progress && progress.time > 10) {
+  // --- Auto-resume:
+  // lookup v.name in progressCache (keys are same format "movies/Category/File.mp4")
+  const saved = progressCache[v.name];
+  if (saved && saved.time > 10) {
     playerVideo.addEventListener(
       "loadedmetadata",
       () => {
-        if (playerVideo.duration > progress.time) playerVideo.currentTime = progress.time;
+        if (playerVideo.duration > saved.time) {
+          playerVideo.currentTime = saved.time;
+        }
       },
       { once: true }
     );
   }
 
+  // Show overlay
+  playerOverlay.classList.add("open");
+  playerOverlay.setAttribute("aria-hidden", "false");
+  closeOverlay.style.display = "block";
+
+  // Fullscreen on mobile only
   const reqFS = playerVideo.requestFullscreen || playerVideo.webkitRequestFullscreen;
-  if (reqFS && window.innerWidth < 900) reqFS.call(playerVideo);
+  if (reqFS && window.innerWidth < 900) {
+    reqFS.call(playerVideo);
+  }
 
   playerVideo.play().catch(() => {});
 }
 
-function closePlayer() {
-  saveProgress(); // ✅ save when closing
-  playerVideo.pause();
-  playerVideo.removeAttribute("src");
-  playerVideo.load();
+function reallyCloseOverlay() {
   playerOverlay.classList.remove("open");
   playerOverlay.setAttribute("aria-hidden", "true");
   closeOverlay.style.display = "none";
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
 }
 
+// when user closes / video ends
+function closePlayer() {
+  saveProgress(); // async, but we don't await, it's fine
+  playerVideo.pause();
+  playerVideo.removeAttribute("src");
+  playerVideo.load();
+  reallyCloseOverlay();
+}
+
+// events
 closeOverlay.addEventListener("click", closePlayer);
-playerVideo.addEventListener("ended", () => {
-  saveProgress();
-  closePlayer();
-});
+playerVideo.addEventListener("ended", closePlayer);
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
+  if (e.key === "Escape" && playerOverlay.classList.contains("open")) {
+    closePlayer();
+  }
 });
 
-// --- Mode switch ---
+// --- Search filter ---
+// We'll just filter the currently loaded allItemsFlat and re-render sections
+// in a simplified way: show a single "Keresés eredményei" row if there's a query.
+function applyFilter(q) {
+  const needle = q.trim().toLowerCase();
+
+  if (!needle) {
+    // if search box empty, show normal layout again
+    renderAllSections();
+    return;
+  }
+
+  // filter items
+  const filtered = allItemsFlat.filter((item) =>
+    prettyName(item.name).toLowerCase().includes(needle)
+  );
+
+  grid.innerHTML = "";
+  const sec = buildSectionDOM("Keresés eredményei", filtered);
+  grid.appendChild(sec);
+}
+search.addEventListener("input", (e) => applyFilter(e.target.value));
+
+// --- Mode switching ---
 moviesBtn.onclick = () => {
+  if (mode === "movies") return;
   mode = "movies";
   moviesBtn.classList.add("active");
   seriesBtn.classList.remove("active");
-  loadAll();
+  initLoad();
 };
 seriesBtn.onclick = () => {
+  if (mode === "series") return;
   mode = "series";
   seriesBtn.classList.add("active");
   moviesBtn.classList.remove("active");
-  loadAll();
+  initLoad();
 };
 
 // --- Logout ---
@@ -219,22 +312,24 @@ document.querySelector(".logout-btn").addEventListener("click", (e) => {
   window.location.href = `${API_BASE}/logout`;
 });
 
-// --- Continue section refresh ---
-async function updateContinueSection() {
+// --- Refresh progress row + re-render UI after saving position
+async function updateContinueAndRerender() {
   await fetchProgress();
-  const data = await fetchVideos();
-  renderAllSections(data);
+  renderAllSections();
 }
 
-// --- Init ---
-async function loadAll() {
+// --- Initial load ---
+async function initLoad() {
   try {
-    const [data, _] = await Promise.all([fetchVideos(), fetchProgress()]);
-    renderAllSections(data);
+    // load both videos and progress
+    const [items, _prog] = await Promise.all([fetchVideos(), fetchProgress()]);
+    allItemsFlat = items; // array of {name, thumb}
+    renderAllSections();
   } catch (err) {
     console.error(err);
     grid.innerHTML = `<div style="color:#ff2d55;">Hiba a betöltés során.</div>`;
   }
 }
 
-loadAll();
+// kickstart
+initLoad();
