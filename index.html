@@ -2,52 +2,55 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BogiFlix</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="bf-header">
+    <h1 class="bf-title">BogiFlix</h1>
+    <div class="bf-selector">
+      <button id="moviesBtn" class="bf-toggle active">Filmek</button>
+      <button id="seriesBtn" class="bf-toggle">Sorozatok</button>
+    </div>
+    <input id="search" class="bf-search" placeholder="Keresés…" />
+    <a href="#" class="logout-btn">Kilépés</a>
+  </header>
 
-<header class="bf-header">
-  <a class="logout-btn" href="#">Kilépés</a>
-  <h1 class="bf-title">BogiFlix</h1>
+  <main class="bf-main">
+    <section id="continueSection" class="bf-section hidden">
+      <h2>Folytatás</h2>
+      <div id="continueGrid" class="bf-grid"></div>
+    </section>
 
-  <nav class="bf-tabs">
-    <button class="bf-tab active" data-type="movies">Filmek</button>
-    <button class="bf-tab" data-type="series">Sorozatok</button>
-  </nav>
+    <section id="gridSection" class="bf-section">
+      <div id="grid" class="bf-grid"></div>
+    </section>
+  </main>
 
-  <input id="search" class="bf-search" placeholder="Keresés..." />
-</header>
+  <footer class="bf-footer">
+    Szerver: <code id="serverUrl"></code><br>
+    © 2025 BogiFlix
+  </footer>
 
-<main class="bf-main">
-  <section id="continue" class="bf-continue"></section>
-  <section id="grid" class="bf-grid"></section>
-</main>
-
-<footer class="bf-footer">
-  <div>Szerver: <code id="serverUrl"></code></div>
-  <div style="margin-top:8px;font-size:13px;opacity:.6;">© 2025 BogiFlix</div>
-</footer>
-
-<div id="playerModal" class="bf-modal" aria-hidden="true">
-  <div class="bf-modal-content">
-    <button id="closeModal" class="bf-close">✕</button>
-    <video id="player" class="bf-video" controls playsinline></video>
+  <!-- 🎬 Video Overlay -->
+  <div id="playerOverlay" class="bf-player-overlay" aria-hidden="true">
+    <div class="bf-player-wrapper">
+      <button id="closeOverlay" class="bf-close-btn">✕</button>
+      <video id="player" class="bf-player" controls playsinline></video>
+    </div>
   </div>
-</div>
 
-<div id="episodeModal" class="bf-ep-modal" aria-hidden="true">
-  <div class="bf-ep-modal-content">
-    <button id="closeEpisodeModal" class="bf-close small">✕</button>
-    <h2 id="showTitle" class="bf-ep-title">Sorozat</h2>
+  <!-- 📺 Episode Modal -->
+  <div id="episodeModal" class="bf-ep-modal" aria-hidden="true">
+    <button id="closeEpisodeModal" class="bf-close">✕</button>
+    <h2 id="epTitle">Sorozat</h2>
     <label>Évad:
       <select id="seasonSelect"></select>
     </label>
-    <ul id="episodeList" class="bf-ep-list"></ul>
+    <ul id="episodeList"></ul>
   </div>
-</div>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
