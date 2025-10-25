@@ -20,7 +20,7 @@ html, body {
 
 /* Header */
 .bf-header {
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 10;
   display: flex;
@@ -250,3 +250,38 @@ html, body {
 .bf-player-overlay .bf-close-btn:hover {
   background: rgba(255, 255, 255, 0.4);
 }
+
+/* === Sections (Netflix-style) === */
+.bf-section {
+  margin-bottom: 40px;
+}
+
+.bf-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 20px 0 15px 5px;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.bf-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(180px, 1fr);
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x mandatory;
+}
+
+.bf-row::-webkit-scrollbar {
+  height: 8px;
+}
+.bf-row::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.bf-row::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
