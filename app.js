@@ -32,7 +32,6 @@ const guessServerURL = () => {
 if (serverUrl) serverUrl.textContent = guessServerURL();
 
 function normalizeVideoPath(path) {
-  // decode any encoded characters like %C3%AD
   try {
     return decodeURIComponent(path);
   } catch {
@@ -52,7 +51,6 @@ async function fetchProgress() {
   const res = await fetch(`${API_BASE}/progress`, { credentials: "include" });
   if (!res.ok) return {};
   const data = await res.json();
-  // normalize keys
   const fixed = {};
   Object.entries(data || {}).forEach(([k, v]) => (fixed[normalizeVideoPath(k)] = v));
   progressCache = fixed;
@@ -85,7 +83,7 @@ function guessThumbFromPath(videoPath) {
 }
 
 // === Rendering ===
-function createCard(item) {
+function createCard(item, isContinue = false) {
   const div = document.createElement("article");
   div.className = "bf-card";
   const title = prettyName(item.name);
@@ -98,19 +96,42 @@ function createCard(item) {
     <div class="bf-meta">
       <h3 class="bf-name">${title}</h3>
       <button class="bf-btn">Lejátszás</button>
+      ${isContinue ? '<button class="bf-del-progress-btn">Folytatás törlése</button>' : ""}
     </div>
   `;
 
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(item));
+
+  // Delete button for Continue Watching
+  if (isContinue) {
+    const delBtn = div.querySelector(".bf-del-progress-btn");
+    delBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await fetch(`${API_BASE}/progress`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video: item.name }),
+      });
+      div.remove();
+
+      // hide header if no more cards remain
+      const row = div.closest(".bf-row");
+      if (row && row.children.length === 0) {
+        const section = row.closest(".bf-section");
+        if (section) section.remove();
+      }
+    });
+  }
+
   return div;
 }
 
-function buildSection(title, items) {
+function buildSection(title, items, isContinue = false) {
   const section = document.createElement("section");
   section.className = "bf-section";
   section.innerHTML = `<h2 class="bf-section-title">${title}</h2><div class="bf-row"></div>`;
   const row = section.querySelector(".bf-row");
-  items.forEach((it) => row.appendChild(createCard(it)));
+  items.forEach((it) => row.appendChild(createCard(it, isContinue)));
   return section;
 }
 
@@ -128,7 +149,7 @@ function renderAll() {
       name: k,
       thumb: guessThumbFromPath(k),
     }));
-    grid.appendChild(buildSection("Megtekintés Folytatása", continueItems));
+    grid.appendChild(buildSection("Megtekintés Folytatása", continueItems, true));
   }
 
   // Movies grouped by category
@@ -181,7 +202,10 @@ async function closePlayer() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ video: decodeURIComponent(rel), time: Math.floor(playerVideo.currentTime) }),
+          body: JSON.stringify({
+            video: decodeURIComponent(rel),
+            time: Math.floor(playerVideo.currentTime),
+          }),
         });
       } catch (e) {
         console.warn("progress save failed", e);
@@ -208,7 +232,9 @@ document.addEventListener("keydown", (e) => {
 search?.addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   if (!q) return renderAll();
-  const matches = allItemsFlat.filter((i) => prettyName(i.name).toLowerCase().includes(q));
+  const matches = allItemsFlat.filter((i) =>
+    prettyName(i.name).toLowerCase().includes(q)
+  );
   grid.innerHTML = "";
   grid.appendChild(buildSection("Keresés eredményei", matches));
 });
