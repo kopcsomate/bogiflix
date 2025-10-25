@@ -191,6 +191,24 @@ body {
 .bf-btn:hover {
   opacity: 0.9;
 }
+/* "Folytatás törlése" button */
+.bf-del-progress-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+  margin-top: 6px;
+  width: 100%;
+  transition: background 0.2s ease;
+}
+.bf-del-progress-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 
 /* Footer */
 .bf-footer {
