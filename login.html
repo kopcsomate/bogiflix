@@ -3,129 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BogiFlix – Bejelentkezés</title>
-
-  <style>
-    :root {
-      --bg: #0b0b0f;
-      --panel: #14141a;
-      --text: #f1f1f5;
-      --accent: #e50914;
-      --accent2: #ff2d55;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(1200px 800px at 20% -10%, #1c1c22 0%, transparent 60%), var(--bg);
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    .login-container {
-      background: var(--panel);
-      padding: 40px 50px;
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,.06);
-    }
-
-    h1 {
-      font-size: 64px;
-      margin: 0 0 25px;
-      font-weight: 900;
-      text-transform: uppercase;
-      background: linear-gradient(270deg, var(--accent), var(--accent2), #c400ff, var(--accent2), var(--accent));
-      background-size: 600%;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-      animation: titleGlow 8s linear infinite;
-      letter-spacing: 2px;
-      text-shadow:
-        0 0 5px var(--accent),
-        0 0 10px var(--accent2),
-        0 0 20px var(--accent2),
-        0 0 40px rgba(255,0,60,0.4);
-    }
-
-    @keyframes titleGlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    input {
-      padding: 12px 14px;
-      border: none;
-      border-radius: 10px;
-      background: #1f1f25;
-      color: var(--text);
-      font-size: 16px;
-      transition: box-shadow .2s;
-    }
-    input:focus {
-      outline: none;
-      box-shadow: 0 0 10px rgba(255,0,60,0.6);
-    }
-
-    button {
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 16px;
-      color: white;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      cursor: pointer;
-      transition: opacity .25s ease, transform .25s ease;
-      box-shadow: 0 6px 20px rgba(229,9,20,.35);
-    }
-    button:hover {
-      opacity: .9;
-      transform: translateY(-2px);
-    }
-
-    .footer {
-      margin-top: 25px;
-      font-size: 14px;
-      color: var(--accent2);
-      opacity: .7;
-    }
-
-  </style>
+  <title>BogiFlix</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="login-container">
-    <h1>BogiFlix</h1>
-    <form action="/login" method="POST">
-      <input type="text" name="username" autocomplete="username" placeholder="Felhasználónév" required />
-      <input type="password" name="password" autocomplete="current-password" placeholder="Jelszó" required />
-  
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#ccc;margin-top:6px;">
-        <input type="checkbox" name="remember" value="1" style="width:16px;height:16px;"> Maradjak bejelentkezve
-      </label>
+  <header class="bf-header">
+    <h1 class="bf-title">BogiFlix</h1>
+    <div class="bf-selector">
+      <button id="moviesBtn" class="bf-toggle active">Filmek</button>
+      <button id="seriesBtn" class="bf-toggle">Sorozatok</button>
+    </div>
+    <input id="search" class="bf-search" placeholder="Keresés…" />
+    <a href="/logout" class="logout-btn">Kilépés</a>
+  </header>
 
-      <button type="submit">Bejelentkezés</button>
-    </form>
-    <div class="footer">© 2025 BogiFlix – Saját mozi otthon</div>
+  <main class="bf-main">
+    <section id="continueSection" class="bf-section hidden">
+      <h2>Folytatás</h2>
+      <div id="continueGrid" class="bf-grid"></div>
+    </section>
+
+    <section id="gridSection" class="bf-section">
+      <div id="grid" class="bf-grid"></div>
+    </section>
+  </main>
+
+  <footer class="bf-footer">
+    Szerver: <code id="serverUrl"></code><br>
+    © 2025 BogiFlix
+  </footer>
+
+  <div id="playerOverlay" class="bf-player-overlay" aria-hidden="true">
+    <div class="bf-player-wrapper">
+      <button id="closeOverlay" class="bf-close-btn">✕</button>
+      <video id="player" class="bf-player" controls playsinline></video>
+    </div>
   </div>
+
+  <div id="episodeModal" class="bf-ep-modal" aria-hidden="true">
+    <button id="closeEpisodeModal" class="bf-close">✕</button>
+    <h2 id="epTitle">Sorozat</h2>
+    <label>Évad:
+      <select id="seasonSelect"></select>
+    </label>
+    <ul id="episodeList"></ul>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
