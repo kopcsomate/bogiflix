@@ -1,4 +1,3 @@
-// === DOM Elements ===
 const grid = document.getElementById("grid");
 const moviesBtn = document.getElementById("moviesBtn");
 const seriesBtn = document.getElementById("seriesBtn");
@@ -9,14 +8,14 @@ const playerOverlay = document.getElementById("playerOverlay");
 const playerVideo = document.getElementById("player");
 const closeOverlay = document.getElementById("closeOverlay");
 
-// 🔧 Cloudflare tunnel URL
+
 const API_BASE = "https://ground-analyzed-electronic-tuesday.trycloudflare.com";
 
 let mode = "movies";
 let allItemsFlat = [];
 let progressCache = {};
 
-// === Helper functions ===
+
 const prettyName = (fullPath) =>
   fullPath
     .split("/")
@@ -39,7 +38,7 @@ function normalizeVideoPath(path) {
   }
 }
 
-// === Backend fetch ===
+
 async function fetchVideos() {
   const res = await fetch(`${API_BASE}/videos/${mode}`, { credentials: "include" });
   if (res.status === 401) window.location.href = `${API_BASE}/login`;
@@ -57,7 +56,7 @@ async function fetchProgress() {
   return fixed;
 }
 
-// === Grouping ===
+
 const getCategoryFromName = (path) => path.split("/")[1] || "Egyéb";
 
 function groupMovies(items) {
@@ -70,7 +69,7 @@ function groupMovies(items) {
   return groups;
 }
 
-// === Thumbnails ===
+
 function guessThumbFromPath(videoPath) {
   const norm = normalizeVideoPath(videoPath);
   const parts = norm.split("/");
@@ -82,7 +81,7 @@ function guessThumbFromPath(videoPath) {
   return "";
 }
 
-// === Rendering ===
+
 function createCard(item, isContinue = false) {
   const div = document.createElement("article");
   div.className = "bf-card";
@@ -100,10 +99,10 @@ function createCard(item, isContinue = false) {
     </div>
   `;
 
-  // Play button
+
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(item));
 
-  // Delete progress button
+
   if (isContinue) {
     const delBtn = div.querySelector(".bf-del-progress-btn");
     delBtn.addEventListener("click", async (e) => {
@@ -115,7 +114,7 @@ function createCard(item, isContinue = false) {
           body: JSON.stringify({ video: item.name }),
         });
         await fetchProgress();
-        renderAll(); // refresh UI and ensure playback starts from start next time
+        renderAll(); 
       } catch (err) {
         console.error("Failed to delete progress:", err);
       }
@@ -137,7 +136,7 @@ function buildSection(title, items, isContinue = false) {
 function renderAll() {
   grid.innerHTML = "";
 
-  // Continue Watching
+
   const cont = Object.entries(progressCache);
   if (cont.length) {
     const unique = {};
@@ -151,19 +150,19 @@ function renderAll() {
     grid.appendChild(buildSection("Megtekintés Folytatása", continueItems, true));
   }
 
-  // Movies grouped by category
+
   if (mode === "movies") {
     const groups = groupMovies(allItemsFlat);
     Object.keys(groups).forEach((cat) => grid.appendChild(buildSection(cat, groups[cat])));
   }
 
-  // Empty fallback
+
   if (!grid.children.length) {
     grid.innerHTML = `<div style="text-align:center;opacity:.7;">Nincs tartalom.</div>`;
   }
 }
 
-// === Player ===
+
 function openPlayer(item) {
   const norm = normalizeVideoPath(item.name);
   const parts = norm.split("/");
@@ -227,7 +226,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && playerOverlay.classList.contains("open")) closePlayer();
 });
 
-// === Search ===
+
 search?.addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   if (!q) return renderAll();
@@ -238,7 +237,7 @@ search?.addEventListener("input", (e) => {
   grid.appendChild(buildSection("Keresés eredményei", matches));
 });
 
-// === Mode Switch ===
+
 moviesBtn?.addEventListener("click", async () => {
   mode = "movies";
   moviesBtn.classList.add("active");
@@ -252,7 +251,7 @@ seriesBtn?.addEventListener("click", async () => {
   await initLoad();
 });
 
-// === Init ===
+
 async function initLoad() {
   try {
     allItemsFlat = await fetchVideos();
@@ -265,4 +264,3 @@ async function initLoad() {
 }
 
 initLoad();
-
