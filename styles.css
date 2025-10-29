@@ -7,7 +7,7 @@
   --accent2: #ff2d55;
 }
 
-/* Base layout */
+
 * {
   box-sizing: border-box;
 }
@@ -21,7 +21,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Header */
+
 .bf-header {
   position: relative; /* not sticky */
   top: 0;
@@ -106,7 +106,7 @@ body {
   margin: 0 auto;
 }
 
-/* --- Netflix-Style Sections --- */
+
 .bf-section {
   margin-bottom: 50px;
 }
@@ -119,7 +119,7 @@ body {
   text-transform: capitalize;
 }
 
-/* Horizontal scrolling rows */
+
 .bf-row {
   display: flex;
   gap: 16px;
@@ -139,7 +139,7 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Cards */
+
 .bf-card {
   flex: 0 0 220px;
   border-radius: 12px;
@@ -191,7 +191,7 @@ body {
 .bf-btn:hover {
   opacity: 0.9;
 }
-/* "Folytatás törlése" button */
+
 .bf-del-progress-btn {
   appearance: none;
   border: none;
@@ -210,7 +210,7 @@ body {
 }
 
 
-/* Footer */
+
 .bf-footer {
   padding: 24px;
   text-align: center;
@@ -224,7 +224,7 @@ body {
   border-radius: 6px;
 }
 
-/* Logout Button */
+
 .logout-btn {
   position: absolute;
   top: 20px;
@@ -238,7 +238,7 @@ body {
   font-size: 14px;
 }
 
-/* Player Overlay */
+
 .bf-player-overlay {
   position: fixed;
   inset: 0;
@@ -266,7 +266,7 @@ body {
   background: #000;
 }
 
-/* Close Button Fix */
+
 #closeOverlay {
   z-index: 10000;
   position: absolute;
@@ -285,7 +285,7 @@ body {
   background: rgba(255, 255, 255, 0.45);
 }
 
-/* Hide old episode modal (if still in DOM) */
+
 #episodeModal,
 .bf-ep-modal {
   display: none !important;
@@ -296,3 +296,4 @@ body {
 .hidden {
   display: none !important;
 }
+
