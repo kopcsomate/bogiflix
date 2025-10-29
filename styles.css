@@ -23,7 +23,7 @@ body {
 
 
 .bf-header {
-  position: relative; /* not sticky */
+  position: relative;
   top: 0;
   z-index: 10;
   display: flex;
@@ -99,7 +99,7 @@ body {
   box-shadow: 0 0 12px rgba(255, 0, 60, 0.5);
 }
 
-/* Main layout */
+
 .bf-main {
   padding: 24px;
   max-width: 1400px;
@@ -296,4 +296,5 @@ body {
 .hidden {
   display: none !important;
 }
+
 
