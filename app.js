@@ -76,7 +76,7 @@ function guessThumbFromPath(videoPath) {
   if (parts[0] === "movies" && parts.length >= 3) {
     const cat = parts[1];
     const file = parts.slice(2).join("/").replace(/\.mp4$/i, "");
-    return `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
+    return API_BASE + `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
   }
   return "";
 }
@@ -85,8 +85,16 @@ function guessThumbFromPath(videoPath) {
 function createCard(item, isContinue = false) {
   const div = document.createElement("article");
   div.className = "bf-card";
+
   const title = prettyName(item.name);
-  const thumb = item.thumb || guessThumbFromPath(item.name);
+
+  // FIX: Always use absolute URLs for Samsung TV
+  let thumb = "";
+  if (item.thumb) {
+    thumb = API_BASE + item.thumb;
+  } else {
+    thumb = guessThumbFromPath(item.name); // already full absolute URL
+  }
 
   div.innerHTML = `
     <div class="bf-thumb" style="background-image:url('${thumb}')">
@@ -99,10 +107,10 @@ function createCard(item, isContinue = false) {
     </div>
   `;
 
-
+  // Play button
   div.querySelector(".bf-btn").addEventListener("click", () => openPlayer(item));
 
-
+  // Delete progress button
   if (isContinue) {
     const delBtn = div.querySelector(".bf-del-progress-btn");
     delBtn.addEventListener("click", async (e) => {
@@ -114,7 +122,7 @@ function createCard(item, isContinue = false) {
           body: JSON.stringify({ video: item.name }),
         });
         await fetchProgress();
-        renderAll(); 
+        renderAll();
       } catch (err) {
         console.error("Failed to delete progress:", err);
       }
@@ -123,6 +131,7 @@ function createCard(item, isContinue = false) {
 
   return div;
 }
+
 
 function buildSection(title, items, isContinue = false) {
   const section = document.createElement("section");
@@ -264,6 +273,7 @@ async function initLoad() {
 }
 
 initLoad();
+
 
 
 
