@@ -76,11 +76,10 @@ function guessThumbFromPath(videoPath) {
   if (parts[0] === "movies" && parts.length >= 3) {
     const cat = parts[1];
     const file = parts.slice(2).join("/").replace(/\.mp4$/i, "");
-    return API_BASE + `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
+    return `/videos/movies/${encodeURIComponent(cat)}/${encodeURIComponent(file)}.jpg`;
   }
   return "";
 }
-
 
 function createCard(item, isContinue = false) {
   const div = document.createElement("article");
@@ -273,6 +272,7 @@ async function initLoad() {
 }
 
 initLoad();
+
 
 
 
